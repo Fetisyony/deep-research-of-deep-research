@@ -119,6 +119,7 @@ class Configuration(BaseModel):
             }
         }
     )
+
     # Model Configuration
     summarization_model: str = Field(
         default="openai:gpt-4.1-mini",

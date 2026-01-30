@@ -9,6 +9,7 @@ import warnings
 from datetime import datetime, timedelta, timezone
 from typing import Annotated, Any, Dict, List, Literal, Optional
 
+from bs4 import BeautifulSoup
 from duckduckgo_search import DDGS
 import aiohttp
 import httpx
@@ -70,7 +71,7 @@ async def tavily_search(
         include_raw_content=True,
         config=config
     )
-    
+
     # Step 2: Deduplicate results by URL to avoid processing the same content multiple times
     unique_results = {}
     for response in search_results:
@@ -179,8 +180,16 @@ async def scrape_pages(titles: List[str], urls: List[str]) -> str:
                     # Handle different content types
                     content_type = response.headers.get('Content-Type', '')
                     if 'text/html' in content_type:
-                        # Convert HTML to markdown
-                        markdown_content = markdownify(response.text)
+                        soup = BeautifulSoup(response.text, "html.parser")
+
+                        for tag in soup(["script", "style", "noscript"]):
+                            tag.decompose()
+
+                        for tag in soup.select('[style*="display:none"], [style*="visibility:hidden"], [hidden], [aria-hidden="true"]'):
+                            tag.decompose()
+                        sanitized_html = str(soup)
+
+                        markdown_content = markdownify(sanitized_html)
                         pages.append(markdown_content)
                     else:
                         # For non-HTML content, just mention the content type

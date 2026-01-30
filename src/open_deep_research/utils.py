@@ -165,7 +165,7 @@ async def scrape_pages(titles: List[str], urls: List[str]) -> str:
     """
     
     # Create an async HTTP client
-    async with httpx.AsyncClient(follow_redirects=True, timeout=30.0) as client:
+    async with httpx.AsyncClient(follow_redirects=False, timeout=30.0) as client:
         pages = []
         
         # Fetch each URL and convert to markdown
